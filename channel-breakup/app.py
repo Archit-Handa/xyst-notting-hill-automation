@@ -8,8 +8,17 @@ def load_data(file):
     df = df.dropna(subset=['Checked Out Date', 'Total Bill amount'], how='all')
     return df
 
-def format_indian_currency(value):
-    return "{:,}".format(value).replace(",", "_").replace("_", ",", 1).replace("_", "")
+def format_indian_number(number):
+    number = float(number)
+    number = round(number,2)
+    is_negative = number < 0
+    number = abs(number)
+    s, *d = str(number).partition(".")
+    r = ",".join([s[x-2:x] for x in range(-3, -len(s), -2)][::-1] + [s[-3:]])
+    value = "".join([r] + d)
+    if is_negative:
+       value = '-' + value
+    return value
 
 
 st.title("Automated Pivot Table Report")
@@ -31,7 +40,7 @@ if uploaded_file is not None:
     df['Month'] = pd.to_datetime(df['Check Out Date']).dt.strftime('%b-%y')
     
     pivot_overall = df.pivot_table(index="Channel", columns="Month", values="Total Bill", aggfunc="sum", margins=True, margins_name="Total").reset_index()
-    pivot_overall = pivot_overall.applymap(lambda x: format_indian_currency(x) if isinstance(x, (int, float)) else x)
+    pivot_overall = pivot_overall.applymap(lambda x: format_indian_number(x) if isinstance(x, (int, float)) else x)
     st.write("### Overall Contribution by Channel", pivot_overall)
 
     # Drill-down selection
