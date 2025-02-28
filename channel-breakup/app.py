@@ -3,7 +3,9 @@ import pandas as pd
 
 @st.cache_data
 def load_data(file):
-    df = pd.read_excel(file, sheet_name="New Check Out Details ")
+    df = pd.read_excel(file, sheet_name='New Check Out Details')
+    # drop rows with more than 6 missing values
+    df = df.dropna(thresh=6)
     return df
 
 st.title("Automated Pivot Table Report")
