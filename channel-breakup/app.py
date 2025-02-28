@@ -24,7 +24,7 @@ if uploaded_file is not None:
             'Checked Out Date': 'Check Out Date'
         })
     df = df[['Channel', 'Company', 'Total Bill', 'Check Out Date']].dropna()
-    df['Month'] = pd.to_datetime(df['Check Out Date']).dt.strftime('%Y-%m')
+    df['Month'] = pd.to_datetime(df['Check Out Date']).dt.strftime('%b-%y')
     
     pivot_overall = df.pivot_table(index="Channel", columns="Month", values="Total Bill", aggfunc="sum", margins=True, margins_name="Total").reset_index()
     st.write("### Overall Contribution by Channel", pivot_overall)
