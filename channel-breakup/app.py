@@ -1,13 +1,17 @@
 import streamlit as st
 import pandas as pd
+import re
 
 @st.cache_data
 def load_data(file):
     df = pd.read_excel(file, sheet_name='New Check Out Details ')
-    # drop rows with more than 6 missing values
-    df = df.dropna(subset=['Checked Out Date', 'Total Bill amount'], how='all')
+    df = df.dropna(subset=['Checked Out Date', 'Total Bill amount'])
+    df['category'] = df['category'].apply(format_category)
     return df
 
+def format_category(x):
+    x = re.sub(r'\s+', ' ', x)
+    return x.strip()
 
 st.title("Automated Pivot Table Report")
 
