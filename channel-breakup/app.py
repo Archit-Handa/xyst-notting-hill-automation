@@ -5,7 +5,7 @@ import pandas as pd
 def load_data(file):
     df = pd.read_excel(file, sheet_name='New Check Out Details')
     # drop rows with more than 6 missing values
-    df = df.dropna(thresh=6)
+    df = df.dropna(subset=['Checked Out Date', 'Total Bill amount'], how='all')
     return df
 
 st.title("Automated Pivot Table Report")
@@ -17,7 +17,11 @@ if uploaded_file is not None:
     st.write("### Data Preview", df.head())
 
     # Cleaning data
-    df = df.rename(columns={"category": "Channel", "Company name": "Company", "Bal. Amount/Discount": "Total Bill"})
+    df = df.rename(columns={
+            'category': 'Channel',
+            'Company name': 'Company',
+            'Total Bill amount': 'Total Bill'
+        })
     df = df[["Channel", "Company", "Total Bill"]].dropna()
     
     # Overall pivot table (sum of Total Bill per Channel)
