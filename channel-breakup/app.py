@@ -20,17 +20,18 @@ if uploaded_file is not None:
     df = df.rename(columns={
             'category': 'Channel',
             'Company name': 'Company',
-            'Total Bill amount': 'Total Bill'
+            'Total Bill amount': 'Total Bill',
+            'Checked Out Date': 'Check Out Date'
         })
-    df = df[["Channel", "Company", "Total Bill"]].dropna()
+    df = df[['Channel', 'Company', 'Total Bill', 'Check Out Date']].dropna()
+    df['Month'] = pd.to_datetime(df['Check Out Date']).dt.strftime('%Y-%m')
     
-    # Overall pivot table (sum of Total Bill per Channel)
-    pivot_overall = df.groupby("Channel")["Total Bill"].sum().reset_index()
+    pivot_overall = df.pivot_table(index="Channel", columns="Month", values="Total Bill", aggfunc="sum", margins=True, margins_name="Total").reset_index()
     st.write("### Overall Contribution by Channel", pivot_overall)
 
     # Drill-down selection
     selected_channel = st.selectbox("Select a Channel to drill down:", pivot_overall["Channel"].unique())
     if selected_channel:
         df_channel = df[df["Channel"] == selected_channel]
-        drilldown = df_channel.groupby("Company")["Total Bill"].sum().reset_index()
+        drilldown = df_channel.pivot_table(index="Company", columns="Month", values="Total Bill", aggfunc="sum", margins=True, margins_name="Total").reset_index()
         st.write(f"### Contribution Breakdown for {selected_channel}", drilldown)
