@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import re
+from difflib import get_close_matches
 
 @st.cache_data
 def load_data(file):
@@ -30,6 +31,23 @@ if uploaded_file is not None:
         })
     df = df[['Channel', 'Company', 'Total Bill', 'Check Out Date']].dropna()
     df['Month'] = pd.to_datetime(df['Check Out Date']).dt.strftime('%b-%y')
+    
+    df["Company"] = df["Company"].str.strip().str.lower()
+    
+    # Merge similar company names
+    unique_companies = df["Company"].unique().tolist()
+    merged_names = {}
+    
+    for company in unique_companies:
+        matches = get_close_matches(company, unique_companies, cutoff=0.8)
+        if len(matches) > 1:
+            main_name = matches[0]
+            if main_name != company:
+                user_choice = st.radio(f"Merge '{company}' with '{main_name}'?", ("Yes", "No"), key=company)
+                if user_choice == "Yes":
+                    merged_names[company] = main_name
+    
+    df["Company"] = df["Company"].replace(merged_names)
     
     pivot_overall = df.pivot_table(index="Channel", columns="Month", values="Total Bill", aggfunc="sum", margins=True, margins_name="Total").reset_index()
     
