@@ -8,6 +8,10 @@ def load_data(file):
     df = df.dropna(subset=['Checked Out Date', 'Total Bill amount'], how='all')
     return df
 
+def format_indian_currency(value):
+    return "{:,}".format(value).replace(",", "_").replace("_", ",", 1).replace("_", "")
+
+
 st.title("Automated Pivot Table Report")
 
 uploaded_file = st.file_uploader("Upload your daily Excel report", type=["xlsx"])
@@ -27,6 +31,7 @@ if uploaded_file is not None:
     df['Month'] = pd.to_datetime(df['Check Out Date']).dt.strftime('%b-%y')
     
     pivot_overall = df.pivot_table(index="Channel", columns="Month", values="Total Bill", aggfunc="sum", margins=True, margins_name="Total").reset_index()
+    pivot_overall = pivot_overall.applymap(lambda x: format_indian_currency(x) if isinstance(x, (int, float)) else x)
     st.write("### Overall Contribution by Channel", pivot_overall)
 
     # Drill-down selection
